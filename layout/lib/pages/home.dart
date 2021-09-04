@@ -1,8 +1,9 @@
 import 'dart:convert';
-// import 'dart:html';
 
 import 'package:flutter/material.dart';
 import 'package:layout/pages/detail.dart';
+import 'package:http/http.dart' as http;
+import 'dart:async';
 
 class HomePage extends StatefulWidget {
   // const HomePage({ Key? key }) : super(key: key);
@@ -21,18 +22,21 @@ class _HomePageState extends State<HomePage> {
       body: Padding(
         padding: const EdgeInsets.all(10),
         child: FutureBuilder(
-            builder: (context, snapshot) {
-              var data = json.decode(snapshot.data.toString());
-              return ListView.builder(
+          builder: (context, AsyncSnapshot snapshot) {
+            // var data = json.decode(snapshot.data.toString());
+            return ListView.builder(
                 itemBuilder: (context, int index) {
-                  return Mybox(data[index]['title'], data[index]['subtitle'],
-                      data[index]['image_url'], data[index]['detail']);
+                  return Mybox(
+                      snapshot.data[index]['title'],
+                      snapshot.data[index]['subtitle'],
+                      snapshot.data[index]['image_url'],
+                      snapshot.data[index]['detail']);
                 },
-                itemCount: data.length,
-              );
-            },
-            future:
-                DefaultAssetBundle.of(context).loadString('assets/data.json')),
+                itemCount: snapshot.data.length);
+          },
+          // future: DefaultAssetBundle.of(context).loadString('assets/data.json'),
+          future: getData(),
+        ),
       ),
     );
   }
@@ -63,7 +67,7 @@ class _HomePageState extends State<HomePage> {
           Text(
             title,
             style: TextStyle(
-                fontSize: 25, color: Colors.grey, fontWeight: FontWeight.bold),
+                fontSize: 25, color: Colors.white, fontWeight: FontWeight.bold),
           ),
           SizedBox(
             height: 20,
@@ -71,7 +75,7 @@ class _HomePageState extends State<HomePage> {
           Text(
             subtitle,
             style: TextStyle(
-                fontSize: 15, color: Colors.grey, fontWeight: FontWeight.bold),
+                fontSize: 15, color: Colors.white, fontWeight: FontWeight.bold),
           ),
           SizedBox(height: 15),
           TextButton(
@@ -86,5 +90,13 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
     );
+  }
+
+  Future getData() async {
+    var url = Uri.https(
+        'raw.githubusercontent.com', '/bundithdevER/BasicAPI/main/data.json');
+    var response = await http.get(url);
+    var result = json.decode(response.body);
+    return result;
   }
 }
